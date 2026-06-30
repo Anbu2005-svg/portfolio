@@ -421,16 +421,19 @@ img {
 
 .hero-name {
     font-family: var(--font-primary);
-    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-size: clamp(3rem, 7.5vw, 6.5rem);
     font-weight: 900;
     line-height: 1.05;
     margin-bottom: 24px;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
 }
 
 .name-line {
-    display: block;
-    overflow: hidden;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.18em;
+    overflow: visible;
+    white-space: nowrap;
 }
 
 .name-word {
@@ -442,7 +445,7 @@ img {
 
 .name-word:nth-child(1) { animation-delay: 0.7s; }
 
-.name-line:nth-child(2) .name-word { animation-delay: 0.9s; }
+.name-word.accent { animation-delay: 0.9s; }
 
 .name-word.accent {
     background: var(--gradient-primary);
