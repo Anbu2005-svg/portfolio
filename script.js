@@ -554,16 +554,27 @@ window.addEventListener('load', () => {
         e.preventDefault();
 
         const btn = form.querySelector('.btn-primary');
-        const originalHTML = btn.innerHTML;
+        const btnLabel = btn.querySelector('span');
+        const originalText = btnLabel ? btnLabel.textContent : '';
+        const name = document.getElementById('formName').value.trim();
+        const email = document.getElementById('formEmail').value.trim();
+        const message = document.getElementById('formMessage').value.trim();
+        const body = [
+            `Name: ${name}`,
+            `Email: ${email}`,
+            '',
+            message,
+        ].join('\n');
 
-        btn.innerHTML = '<span>Message Sent! ✓</span>';
+        window.location.href = `mailto:anbanand446@gmail.com?subject=${encodeURIComponent('Portfolio contact message')}&body=${encodeURIComponent(body)}`;
+
+        if (btnLabel) btnLabel.textContent = 'Opening Email...';
         btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
 
         setTimeout(() => {
-            btn.innerHTML = originalHTML;
+            if (btnLabel) btnLabel.textContent = originalText;
             btn.style.background = '';
-            form.reset();
-        }, 3000);
+        }, 2000);
     });
 })();
 
