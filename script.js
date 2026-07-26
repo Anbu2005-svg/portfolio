@@ -385,6 +385,8 @@ window.addEventListener('load', () => {
 
     const texts = [
         'Machine Learning Developer',
+        'AI & Software Engineer',
+        'Software Developer',
         'Deep Learning Engineer',
         'Computer Vision Specialist',
         'NLP & RAG Systems Builder',
