@@ -1,6 +1,6 @@
-# Anbanand A - ML Developer & AI Engineer Portfolio
+# Anbanand A - ML Developer, AI Engineer & Software Developer Portfolio
 
-> **Machine Learning Developer crafting intelligent, data-driven applications with expertise in Deep Learning, Computer Vision, NLP, and RAG-based LLM systems.**
+> **Software Developer & Machine Learning Engineer crafting intelligent, data-driven applications with expertise in Deep Learning, Computer Vision, NLP, and RAG-based LLM systems.**
 
 [![Portfolio](https://img.shields.io/badge/Portfolio-Live-00d4ff?style=for-the-badge&logo=netlify)](https://tangerine-hummingbird-80d587.netlify.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Anbu2005--svg-7c5cfc?style=for-the-badge&logo=github)](https://github.com/Anbu2005-svg)
@@ -72,7 +72,7 @@ This is an **interactive 3D portfolio website** showcasing AI/ML expertise, proj
 
 ## 🎓 About Me
 
-**Anbanand A** | ML Developer & AI Engineer  
+**Anbanand A** | ML Developer, AI Engineer & Software Developer  
 🎓 **B.E. Computer Science** @ Sri Ramakrishna Engineering College, Coimbatore (2023-2027)  
 📊 **CGPA:** 7.22
 
