@@ -566,7 +566,7 @@ window.addEventListener('load', () => {
             message,
         ].join('\n');
 
-        window.location.href = `mailto:anbanand446@gmail.com?subject=${encodeURIComponent('Portfolio contact message')}&body=${encodeURIComponent(body)}`;
+        window.location.href = `mailto:anbanand44@gmail.com?subject=${encodeURIComponent('Portfolio contact message')}&body=${encodeURIComponent(body)}`;
 
         if (btnLabel) btnLabel.textContent = 'Opening Email...';
         btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
