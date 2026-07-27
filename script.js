@@ -14,21 +14,24 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     camera.position.z = 30;
 
-    // Mouse tracking
-    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    // Mouse tracking with smooth interpolation
+    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0, clientX: 0, clientY: 0 };
+    let scrollProgress = 0;
 
-    // ---- Particle System ----
-    const particleCount = 1500;
+    // ---- Enhanced Particle System ----
+    const particleCount = 2500;
     const particleGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
     const sizes = new Float32Array(particleCount);
+    const originalPositions = new Float32Array(particleCount * 3);
 
     const colorPalette = [
         new THREE.Color(0x7c5cfc), // purple
         new THREE.Color(0x00d4ff), // cyan
         new THREE.Color(0xff6b9d), // pink
         new THREE.Color(0x6366f1), // indigo
+        new THREE.Color(0xa855f7), // violet
     ];
 
     for (let i = 0; i < particleCount; i++) {
@@ -36,12 +39,17 @@
         positions[i * 3 + 1] = (Math.random() - 0.5) * 80;
         positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
 
+        // Store original positions for magnetism reset
+        originalPositions[i * 3] = positions[i * 3];
+        originalPositions[i * 3 + 1] = positions[i * 3 + 1];
+        originalPositions[i * 3 + 2] = positions[i * 3 + 2];
+
         const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
         colors[i * 3] = color.r;
         colors[i * 3 + 1] = color.g;
         colors[i * 3 + 2] = color.b;
 
-        sizes[i] = Math.random() * 2 + 0.5;
+        sizes[i] = Math.random() * 2.5 + 0.5;
     }
 
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -49,10 +57,10 @@
     particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
     const particleMaterial = new THREE.PointsMaterial({
-        size: 0.15,
+        size: 0.18,
         vertexColors: true,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.7,
         sizeAttenuation: true,
         blending: THREE.AdditiveBlending,
     });
@@ -63,26 +71,26 @@
     // ---- Floating 3D Objects ----
     const floatingObjects = [];
 
-    // Wireframe materials
+    // Wireframe materials with enhanced opacity
     const wireMaterialPurple = new THREE.MeshBasicMaterial({
         color: 0x7c5cfc,
         wireframe: true,
         transparent: true,
-        opacity: 0.15,
+        opacity: 0.2,
     });
 
     const wireMaterialCyan = new THREE.MeshBasicMaterial({
         color: 0x00d4ff,
         wireframe: true,
         transparent: true,
-        opacity: 0.12,
+        opacity: 0.15,
     });
 
     const wireMaterialPink = new THREE.MeshBasicMaterial({
         color: 0xff6b9d,
         wireframe: true,
         transparent: true,
-        opacity: 0.1,
+        opacity: 0.12,
     });
 
     // Icosahedron
@@ -98,6 +106,8 @@
         floatSpeed: 0.8,
         floatAmplitude: 2,
         initialY: 8,
+        initialX: 15,
+        targetRotX: 0, targetRotY: 0,
     });
 
     // Torus
@@ -113,6 +123,8 @@
         floatSpeed: 0.6,
         floatAmplitude: 3,
         initialY: -5,
+        initialX: -18,
+        targetRotX: 0, targetRotY: 0,
     });
 
     // Octahedron
@@ -128,6 +140,8 @@
         floatSpeed: 1.0,
         floatAmplitude: 1.5,
         initialY: 10,
+        initialX: -12,
+        targetRotX: 0, targetRotY: 0,
     });
 
     // Dodecahedron
@@ -135,7 +149,7 @@
         new THREE.DodecahedronGeometry(2, 0),
         wireMaterialPurple.clone()
     );
-    dodecahedron.material.opacity = 0.1;
+    dodecahedron.material.opacity = 0.12;
     dodecahedron.position.set(20, -8, -12);
     scene.add(dodecahedron);
     floatingObjects.push({
@@ -144,6 +158,8 @@
         floatSpeed: 0.7,
         floatAmplitude: 2.5,
         initialY: -8,
+        initialX: 20,
+        targetRotX: 0, targetRotY: 0,
     });
 
     // TorusKnot
@@ -151,7 +167,7 @@
         new THREE.TorusKnotGeometry(1.5, 0.5, 64, 8),
         wireMaterialCyan.clone()
     );
-    torusKnot.material.opacity = 0.08;
+    torusKnot.material.opacity = 0.1;
     torusKnot.position.set(8, -12, -18);
     scene.add(torusKnot);
     floatingObjects.push({
@@ -160,7 +176,34 @@
         floatSpeed: 0.5,
         floatAmplitude: 2,
         initialY: -12,
+        initialX: 8,
+        targetRotX: 0, targetRotY: 0,
     });
+
+    // ---- NEW: Glowing Ring / Orbit ----
+    const ringGeometry = new THREE.TorusGeometry(6, 0.08, 16, 100);
+    const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0x7c5cfc,
+        transparent: true,
+        opacity: 0.2,
+    });
+    const glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
+    glowRing.position.set(0, 0, -5);
+    glowRing.rotation.x = Math.PI * 0.4;
+    scene.add(glowRing);
+
+    // Second ring
+    const ring2Geometry = new THREE.TorusGeometry(8, 0.05, 16, 100);
+    const ring2Material = new THREE.MeshBasicMaterial({
+        color: 0x00d4ff,
+        transparent: true,
+        opacity: 0.1,
+    });
+    const glowRing2 = new THREE.Mesh(ring2Geometry, ring2Material);
+    glowRing2.position.set(0, 0, -8);
+    glowRing2.rotation.x = Math.PI * 0.6;
+    glowRing2.rotation.z = Math.PI * 0.2;
+    scene.add(glowRing2);
 
     // ---- Connection Lines ----
     const lineGeometry = new THREE.BufferGeometry();
@@ -169,7 +212,7 @@
     const lineMaterial = new THREE.LineBasicMaterial({
         color: 0x7c5cfc,
         transparent: true,
-        opacity: 0.04,
+        opacity: 0.05,
         blending: THREE.AdditiveBlending,
     });
     const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
@@ -228,24 +271,78 @@
         particles.rotation.x = time * 0.05 + mouse.targetY * 0.3;
         particles.rotation.y = time * 0.08 + mouse.targetX * 0.3;
 
-        // Animate floating objects
+        // Scroll-driven camera Z shift (subtle zoom)
+        camera.position.z = 30 - scrollProgress * 5;
+
+        // Animate particle sizes (breathing/pulsing)
+        const sizeArray = particles.geometry.attributes.size.array;
+        for (let i = 0; i < particleCount; i++) {
+            sizeArray[i] = sizes[i] * (1 + Math.sin(time * 2 + i * 0.1) * 0.3);
+        }
+        particles.geometry.attributes.size.needsUpdate = true;
+
+        // Mouse magnetism on particles
+        const posArray = particles.geometry.attributes.position.array;
+        const mouseX3D = mouse.targetX * 20;
+        const mouseY3D = -mouse.targetY * 20;
+        const magnetRadius = 15;
+        const magnetStrength = 0.02;
+
+        for (let i = 0; i < particleCount; i++) {
+            const px = posArray[i * 3];
+            const py = posArray[i * 3 + 1];
+            const dx = mouseX3D - px;
+            const dy = mouseY3D - py;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < magnetRadius && dist > 0.1) {
+                const force = (1 - dist / magnetRadius) * magnetStrength;
+                posArray[i * 3] += dx * force;
+                posArray[i * 3 + 1] += dy * force;
+            }
+
+            // Wave effect
+            posArray[i * 3 + 1] += Math.sin(time + posArray[i * 3] * 0.1) * 0.01;
+
+            // Scroll-driven depth shift
+            posArray[i * 3 + 2] += Math.sin(scrollProgress * Math.PI + i * 0.01) * 0.005;
+        }
+        particles.geometry.attributes.position.needsUpdate = true;
+
+        // Animate floating objects with spring physics toward cursor
         floatingObjects.forEach((obj) => {
+            // Base rotation
             obj.mesh.rotation.x += obj.rotSpeed.x;
             obj.mesh.rotation.y += obj.rotSpeed.y;
             obj.mesh.rotation.z += obj.rotSpeed.z;
+
+            // Float
             obj.mesh.position.y =
                 obj.initialY + Math.sin(time * obj.floatSpeed) * obj.floatAmplitude;
 
-            // React to mouse
-            obj.mesh.position.x += mouse.targetX * 0.02;
+            // Spring toward cursor (aggressive react)
+            const targetX = obj.initialX + mouse.targetX * 3;
+            obj.mesh.position.x += (targetX - obj.mesh.position.x) * 0.03;
+
+            // Tilt toward mouse
+            obj.targetRotX += (mouse.targetY * 0.5 - obj.targetRotX) * 0.05;
+            obj.targetRotY += (mouse.targetX * 0.5 - obj.targetRotY) * 0.05;
+            obj.mesh.rotation.x += obj.targetRotX * 0.02;
+            obj.mesh.rotation.y += obj.targetRotY * 0.02;
+
+            // Scroll-driven scale morph
+            const scale = 1 + Math.sin(scrollProgress * Math.PI * 2) * 0.15;
+            obj.mesh.scale.setScalar(scale);
         });
 
-        // Update particle positions slightly for wave effect
-        const posArray = particles.geometry.attributes.position.array;
-        for (let i = 0; i < particleCount; i++) {
-            posArray[i * 3 + 1] += Math.sin(time + posArray[i * 3] * 0.1) * 0.01;
-        }
-        particles.geometry.attributes.position.needsUpdate = true;
+        // Animate glowing rings
+        glowRing.rotation.z = time * 0.3;
+        glowRing.rotation.x = Math.PI * 0.4 + Math.sin(time * 0.5) * 0.1;
+        glowRing.material.opacity = 0.15 + Math.sin(time * 2) * 0.05;
+
+        glowRing2.rotation.z = -time * 0.2;
+        glowRing2.rotation.y = time * 0.15;
+        glowRing2.material.opacity = 0.08 + Math.sin(time * 1.5 + 1) * 0.03;
 
         // Update connection lines every few frames for performance
         if (Math.floor(time * 100) % 5 === 0) {
@@ -268,6 +365,62 @@
     window.addEventListener('mousemove', (e) => {
         mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
         mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
+        mouse.clientX = e.clientX;
+        mouse.clientY = e.clientY;
+    });
+
+    // ---- Scroll tracking for 3D effects ----
+    window.addEventListener('scroll', () => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        scrollProgress = maxScroll > 0 ? window.pageYOffset / maxScroll : 0;
+    });
+})();
+
+
+// ============ CLICK BURST EFFECT ============
+(function () {
+    const container = document.getElementById('clickBurstContainer');
+    if (!container) return;
+
+    const burstColors = ['#7c5cfc', '#00d4ff', '#ff6b9d', '#6366f1', '#a855f7'];
+
+    document.addEventListener('click', (e) => {
+        const count = 20 + Math.floor(Math.random() * 15);
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('burst-particle');
+
+            const color = burstColors[Math.floor(Math.random() * burstColors.length)];
+            const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+            const velocity = 40 + Math.random() * 80;
+            const size = 3 + Math.random() * 5;
+
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.background = color;
+            particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+            particle.style.left = e.clientX + 'px';
+            particle.style.top = e.clientY + 'px';
+
+            // Animate via custom properties
+            const endX = Math.cos(angle) * velocity;
+            const endY = Math.sin(angle) * velocity;
+            particle.style.setProperty('--endX', endX + 'px');
+            particle.style.setProperty('--endY', endY + 'px');
+            particle.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: `translate(${endX}px, ${endY}px) scale(0)`, opacity: 0 }
+            ], {
+                duration: 600 + Math.random() * 400,
+                easing: 'cubic-bezier(0, 0.9, 0.3, 1)',
+            });
+
+            container.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 1100);
+        }
     });
 })();
 
@@ -513,7 +666,7 @@ window.addEventListener('load', () => {
 })();
 
 
-// ============ 3D TILT CARD EFFECT ============
+// ============ 3D TILT CARD EFFECT (ENHANCED) ============
 (function () {
     const tiltCards = document.querySelectorAll('.tilt-card');
 
@@ -525,24 +678,63 @@ window.addEventListener('load', () => {
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            const rotateX = ((y - centerY) / centerY) * -8;
-            const rotateY = ((x - centerX) / centerX) * 8;
+            // Enhanced tilt (12° instead of 8°)
+            const rotateX = ((y - centerY) / centerY) * -12;
+            const rotateY = ((x - centerX) / centerX) * 12;
 
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03, 1.03, 1.03)`;
 
-            // Gloss effect
+            // Dynamic light reflection + gloss effect
             const glossX = (x / rect.width) * 100;
             const glossY = (y / rect.height) * 100;
             card.style.background = `
-                radial-gradient(circle at ${glossX}% ${glossY}%, rgba(124, 92, 252, 0.08), transparent 50%),
+                radial-gradient(circle at ${glossX}% ${glossY}%, rgba(124, 92, 252, 0.12), transparent 40%),
+                radial-gradient(circle at ${glossX}% ${glossY}%, rgba(0, 212, 255, 0.06), transparent 60%),
                 rgba(15, 15, 30, 0.6)
             `;
+
+            // Cursor-proximity border glow
+            card.style.borderColor = `rgba(124, 92, 252, ${0.15 + (1 - Math.abs(x - centerX) / centerX) * 0.3})`;
         });
 
         card.addEventListener('mouseleave', () => {
-            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+            card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
             card.style.background = 'rgba(15, 15, 30, 0.6)';
+            card.style.borderColor = '';
         });
+    });
+})();
+
+
+// ============ MAGNETIC BUTTONS ============
+(function () {
+    const magneticBtns = document.querySelectorAll('.btn');
+
+    magneticBtns.forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+
+            btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px) scale(1.02)`;
+        });
+
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = '';
+        });
+    });
+})();
+
+
+// ============ SCROLL PROGRESS BAR ============
+(function () {
+    const progressBar = document.getElementById('scrollProgress');
+    if (!progressBar) return;
+
+    window.addEventListener('scroll', () => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = maxScroll > 0 ? (window.pageYOffset / maxScroll) * 100 : 0;
+        progressBar.style.width = progress + '%';
     });
 })();
 
