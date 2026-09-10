@@ -25,6 +25,7 @@
     --gradient-fire: linear-gradient(135deg, #ff6b35, #ff2d2d);
     --gradient-cyber: linear-gradient(135deg, #00d4ff, #0066ff);
     --gradient-ai: linear-gradient(135deg, #7c5cfc, #ff6b9d);
+    --gradient-supermart: linear-gradient(135deg, #00c853, #00bcd4);
 
     --font-primary: 'Space Grotesk', 'Inter', sans-serif;
     --font-secondary: 'Inter', sans-serif;
@@ -1057,6 +1058,7 @@ img {
 .project-glow-fire { background: var(--gradient-fire); }
 .project-glow-cyber { background: var(--gradient-cyber); }
 .project-glow-ai { background: var(--gradient-ai); }
+.project-glow-supermart { background: var(--gradient-supermart); }
 
 /* ---- Experience Section ---- */
 .timeline {
